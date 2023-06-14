@@ -1,9 +1,7 @@
 package com.leonidov.listtasks.controller
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.leonidov.listtasks.model.Task
 import com.leonidov.listtasks.service.TaskService
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -11,7 +9,7 @@ import java.util.*
 
 @RestController
 @RequestMapping("api/tasks")
-class TasksController(@Autowired private val taskService: TaskService) {
+class TasksController(private val taskService: TaskService) {
 
     @GetMapping
     fun handleGetAllTasks(): ResponseEntity<*> {
@@ -22,12 +20,12 @@ class TasksController(@Autowired private val taskService: TaskService) {
 
     @PostMapping
     fun handleSaveNewTask(
-        @RequestBody details: String,
-        @RequestBody userCreated: String): ResponseEntity<*> {
+        @RequestBody _task: Task): ResponseEntity<*> {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(taskService.saveOrUpdate(
-                    Task(details, UUID.fromString(userCreated))))
+            .body(
+                taskService.saveOrUpdate(
+                    Task(_task.details, _task.userCreated)))
     }
 
     @GetMapping("/{id}")
@@ -35,6 +33,18 @@ class TasksController(@Autowired private val taskService: TaskService) {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(taskService.findById(id))
+    }
+
+    @PutMapping("/{id}")
+    fun handleUpdateTask(
+        @PathVariable("id") id: UUID,
+        @RequestBody _task: Task): ResponseEntity<*> {
+        return if (taskService.findById(id).isPresent) {
+            taskService.saveOrUpdate(Task(id, _task.details, _task.decided, _task.userCreated))
+            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body("Успешно изменено")
+        } else {
+            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body("Такой задачи не существует")
+        }
     }
 
     @DeleteMapping("/{id}")

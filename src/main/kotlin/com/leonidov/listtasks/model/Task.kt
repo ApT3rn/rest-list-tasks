@@ -4,10 +4,10 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.util.*
 
-@Document("tasks")
+@Document(collection = "tasks")
 class Task (
     @Id
-    val id: UUID,
+    val id: UUID?,
     var details: String,
     var decided: Boolean,
     val userCreated: UUID) {

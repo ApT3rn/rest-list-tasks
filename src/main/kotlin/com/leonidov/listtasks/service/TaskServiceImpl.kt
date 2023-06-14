@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class TaskServiceImpl(@Autowired private val repository: TaskRepository): TaskService {
+class TaskServiceImpl(private val repository: TaskRepository): TaskService {
 
     override fun findAll(): MutableList<Task> = repository.findAll()
 
@@ -15,7 +15,7 @@ class TaskServiceImpl(@Autowired private val repository: TaskRepository): TaskSe
 
     override fun findById(id: UUID): Optional<Task> = repository.findById(id)
 
-    override fun findByUserCreate(userCreated: UUID): MutableList<Task> = repository.findAllByUserCreated(userCreated)
+    override fun findByUserCreated(userCreated: UUID): MutableList<Task> = repository.findAllByUserCreated(userCreated)
 
     override fun saveOrUpdate(task: Task): Task = repository.save(task)
 

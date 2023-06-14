@@ -8,7 +8,7 @@ interface TaskService {
     fun findAll(): MutableList<Task>
     fun findAllByDecided(decided: Boolean): MutableList<Task>
     fun findById(id: UUID): Optional<Task>
-    fun findByUserCreate(userCreated: UUID): MutableList<Task>
+    fun findByUserCreated(userCreated: UUID): MutableList<Task>
     fun saveOrUpdate(task: Task): Task
     fun deleteById(id: UUID)
 }
