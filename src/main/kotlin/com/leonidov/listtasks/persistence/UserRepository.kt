@@ -7,4 +7,5 @@ import java.util.*
 
 @Repository
 interface UserRepository : MongoRepository<User, UUID> {
+    fun findUserBy_username(username: String): Optional<User>
 }
