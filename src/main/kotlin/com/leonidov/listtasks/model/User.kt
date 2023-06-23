@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import java.util.*
 
 @Document(collection = "users")
-class User(val _id: UUID, var _username: String, var _password: String, var _role: Role) : UserDetails {
+class User(val _id: UUID, private var _username: String, private var _password: String, private var _role: Role) : UserDetails {
 
     constructor(_username: String, _password: String, _role: Role):
             this(UUID.randomUUID(), _username, _password, _role)

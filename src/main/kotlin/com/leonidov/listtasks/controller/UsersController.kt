@@ -1,19 +1,15 @@
 package com.leonidov.listtasks.controller
 
-import com.leonidov.listtasks.auth.AuthenticationRequest
-import com.leonidov.listtasks.auth.AuthenticationResponse
 import com.leonidov.listtasks.auth.AuthenticationService
+import com.leonidov.listtasks.pojo.AuthenticationRequest
+import com.leonidov.listtasks.pojo.JwtRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+
 
 @RestController
 @RequestMapping("/api/v1/auth")
 class UsersController (private val authenticationService: AuthenticationService) {
-
-    @GetMapping()
-    fun handleMainUrl(): String {
-        return "Привет!"
-    }
 
     @PostMapping("/register")
     fun handleCreateNewUser(@RequestBody request: AuthenticationRequest): ResponseEntity<*> {
@@ -21,7 +17,17 @@ class UsersController (private val authenticationService: AuthenticationService)
     }
 
     @PostMapping("/authenticate")
-    fun handleAuthenticateUser(@RequestBody request: AuthenticationRequest): ResponseEntity<AuthenticationResponse> {
+    fun handleAuthenticateUser(@RequestBody request: AuthenticationRequest): ResponseEntity<*> {
         return ResponseEntity.ok(authenticationService.authenticate(request))
+    }
+
+    @PostMapping("token")
+    fun getNewAccessToken(@RequestBody request: JwtRequest): ResponseEntity<*> {
+        return ResponseEntity.ok(authenticationService.getAccessToken(request.refreshToken))
+    }
+
+    @PostMapping("refresh")
+    fun getNewRefreshToken(@RequestBody request: JwtRequest): ResponseEntity<*> {
+        return ResponseEntity.ok(authenticationService.refresh(request.refreshToken))
     }
 }

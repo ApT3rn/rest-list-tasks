@@ -2,12 +2,19 @@ package com.leonidov.listtasks.controller
 
 import com.leonidov.listtasks.model.Task
 import com.leonidov.listtasks.model.enums.Status
+import com.leonidov.listtasks.pojo.MessageResponse
+import com.leonidov.listtasks.pojo.TaskRequest
 import com.leonidov.listtasks.service.TaskService
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
+import java.net.URI
 import java.security.Principal
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 @RestController
 @RequestMapping("/api/v1/tasks")
@@ -15,81 +22,76 @@ class TasksController(private val taskService: TaskService) {
 
     @GetMapping
     fun handleGetAllTasks(): ResponseEntity<*> {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(taskService.findAllByStatus(Status.CREATED))
+        return ResponseEntity.ok(taskService.findAllByStatus(Status.CREATED.name))
     }
 
     @GetMapping("/created")
     fun handleGetAllTasksUserCreated(principal: Principal): ResponseEntity<*> {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(taskService.findAllByCreated(principal.name))
+        return ResponseEntity.ok(taskService.findAllByCreator(principal.name))
     }
 
     @GetMapping("/progress")
     fun handleGetAllTasksInProgress(principal: Principal): ResponseEntity<*> {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(taskService.findAllByStatusAndWorked(Status.PROGRESS, principal.name))
+        return ResponseEntity.ok(taskService.findAllByStatusAndWorked(Status.PROGRESS.name, principal.name))
     }
 
     @GetMapping("/completed")
     fun handleGetAllTasksCompleted(principal: Principal): ResponseEntity<*> {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(taskService.findAllByStatusAndWorked(Status.PROGRESS, principal.name))
+        return ResponseEntity.ok(taskService.findAllByStatusAndWorked(Status.COMPLETED.name, principal.name))
     }
 
     @PostMapping
-    fun handleSaveNewTask(@RequestBody details: String,
-                          principal: Principal): ResponseEntity<*> {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(taskService.saveOrUpdate(
-                    Task(details, principal.name)))
+    fun handleSaveNewTask(
+        @RequestBody request: TaskRequest,
+        principal: Principal): ResponseEntity<Any> {
+        if (request.details.isBlank())
+            return ResponseEntity.badRequest().build()
+        val taskSaved: Task = taskService.saveOrUpdate(Task(request.details, principal.name))
+        val location: URI =
+            ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(taskSaved.id).toUri()
+        return ResponseEntity.created(location).build()
     }
 
     @GetMapping("/{id}")
-    fun handleGetTask(@PathVariable("id") id: UUID): ResponseEntity<*> {
-        val task:Optional<Task> = taskService.findById(id)
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(task)
+    fun handleGetTask(@PathVariable("id") id: UUID): ResponseEntity<Any> {
+        val task: Optional<Task> = taskService.findById(id)
+        if (task.isEmpty)
+            return ResponseEntity.notFound().build()
+        return ResponseEntity.ok(task)
     }
 
     @PostMapping("/{id}")
-    fun handleTakeTaskToWork(@PathVariable("id") id: UUID, principal: Principal): ResponseEntity<*> {
-        val task: Task = taskService.findById(id).orElse(null)
-        return run {
-            task.status = Status.PROGRESS
-            task.worked = principal.name
-            taskService.saveOrUpdate(task)
-            ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(task)
-        }
+    fun handleUpdateTask(
+        @PathVariable("id") id: UUID,
+        @RequestBody request: TaskRequest): ResponseEntity<Any> {
+        if (request.details.isBlank())
+            return ResponseEntity.badRequest().build()
+        val task: Optional<Task> = taskService.findById(id)
+        if (task.isEmpty)
+            return ResponseEntity.notFound().build()
+        task.get().details = request.details
+        return ResponseEntity.ok(taskService.saveOrUpdate(task.get()))
+
     }
 
-    @PutMapping("/{id}")
-    fun handleUpdateTask(@PathVariable("id") id: UUID,
-        @RequestBody _task: Task): ResponseEntity<*> {
-        return if (taskService.findById(id).isPresent) {
-            taskService.saveOrUpdate(_task)
-            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body("Успешно изменено")
-        } else
-            ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body("Такой задачи не существует")
+    @PostMapping("/{id}/progress")
+    fun handleTakeTaskToWork(@PathVariable("id") id: UUID, principal: Principal): ResponseEntity<Any> {
+        val task: Optional<Task> = taskService.findById(id)
+        if (task.isEmpty || task.get().status != Status.CREATED.name)
+            return ResponseEntity.notFound().build()
+        task.get().status = Status.PROGRESS.name
+        task.get().worked = principal.name
+        return ResponseEntity.ok(taskService.saveOrUpdate(task.get()))
     }
 
-    @PostMapping("/{id}/completed")
-    fun handleTaskToCompleted(@PathVariable("id") id: UUID): ResponseEntity<*> {
-        val task: Task = taskService.findById(id).orElse(null)
-        return run {
-            task.status = Status.COMPLETED
-            taskService.saveOrUpdate(task)
-            ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(task)
-        }
+    @PostMapping("/{id}/complete")
+    fun handleTaskToCompleted(@PathVariable("id") id: UUID): ResponseEntity<Any> {
+        val task: Optional<Task> = taskService.findById(id)
+        if (task.isEmpty)
+            return ResponseEntity.notFound().build()
+        task.get().status = Status.COMPLETED.name
+        task.get().completed_at = LocalDateTime.now()
+            .format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm:ss a"))
+        return ResponseEntity.ok(taskService.saveOrUpdate(task.get()))
     }
 }

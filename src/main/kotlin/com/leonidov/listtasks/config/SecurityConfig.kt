@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
+import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -16,8 +18,8 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+
 
 @Configuration
 @EnableWebSecurity
@@ -30,10 +32,10 @@ class SecurityConfig(private val userDetailsService: UserDetailsService,
     fun SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http.csrf { c -> c.disable() }.cors { c -> c.disable() }
 
-        http.authorizeHttpRequests { c ->
-            c.requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers("/api/v1/tasks/**")
-                .access(WebExpressionAuthorizationManager("isAuthenticated()"))
+        http.authorizeHttpRequests { c -> c
+                .requestMatchers("/api/v1/tasks/**").authenticated()
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                //.access(WebExpressionAuthorizationManager("isAuthenticated()"))
                 .anyRequest().denyAll() }
 
         http.sessionManagement { c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
@@ -50,14 +52,21 @@ class SecurityConfig(private val userDetailsService: UserDetailsService,
 
     @Bean
     fun authenticationProvider(): AuthenticationProvider {
-        val authenticationProvider: DaoAuthenticationProvider = DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
+        val authenticationProvider = DaoAuthenticationProvider()
+        authenticationProvider.setUserDetailsService(userDetailsService)
+        authenticationProvider.setPasswordEncoder(passwordEncoder())
+        return authenticationProvider
     }
 
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
         return config.authenticationManager
+    }
+
+    @Bean
+    fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
+        val template: RedisTemplate<String, String> = RedisTemplate<String, String>()
+        template.connectionFactory = connectionFactory
+        return template
     }
 }

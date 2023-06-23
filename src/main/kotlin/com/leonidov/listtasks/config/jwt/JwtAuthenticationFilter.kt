@@ -12,29 +12,29 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Configuration
-class JwtAuthenticationFilter(private val jwtService: JwtService,
-                              private val userDetailsService: UserDetailsService) : OncePerRequestFilter() {
+class JwtAuthenticationFilter(
+    private val jwtService: JwtService,
+    private val userDetailsService: UserDetailsService) : OncePerRequestFilter() {
 
-    override fun doFilterInternal(request: HttpServletRequest,
-                                  response: HttpServletResponse, filterChain: FilterChain) {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse, filterChain: FilterChain) {
         val authHeader: String? = request.getHeader("Authorization")
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response)
             return
         }
         val jwt: String = authHeader.substring(7)
-        val username: String = jwtService.extractUsername(jwt)
-        if (SecurityContextHolder.getContext().authentication == null) {
+        if (jwtService.validateAccessToken(jwt) && SecurityContextHolder.getContext().authentication == null) {
+            val username: String = jwtService.extractUsernameFromAccessToken(jwt)
             val userDetails: UserDetails = userDetailsService.loadUserByUsername(username)
-            if (jwtService.inTokenValid(jwt, userDetails)) {
-                val authToken: UsernamePasswordAuthenticationToken = UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.authorities
-                )
-                authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = authToken
-            }
+            val authToken = UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.authorities
+            )
+            authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+            SecurityContextHolder.getContext().authentication = authToken
         }
         filterChain.doFilter(request, response)
     }
