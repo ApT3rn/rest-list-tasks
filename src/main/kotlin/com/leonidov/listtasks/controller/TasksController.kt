@@ -2,10 +2,8 @@ package com.leonidov.listtasks.controller
 
 import com.leonidov.listtasks.model.Task
 import com.leonidov.listtasks.model.enums.Status
-import com.leonidov.listtasks.pojo.MessageResponse
 import com.leonidov.listtasks.pojo.TaskRequest
 import com.leonidov.listtasks.service.TaskService
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder

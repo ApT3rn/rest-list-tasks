@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 import java.util.*
 
-@Repository
-interface UserRepository : MongoRepository<User, UUID> {
-    fun findUserBy_username(username: String): Optional<User>
+interface UserRepository {
+    fun findUserByUsername(username: String): Optional<User>
+    fun save(user: User): User
 }

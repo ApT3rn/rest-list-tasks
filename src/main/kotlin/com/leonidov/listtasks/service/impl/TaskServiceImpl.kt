@@ -1,7 +1,8 @@
-package com.leonidov.listtasks.service
+package com.leonidov.listtasks.service.impl
 
 import com.leonidov.listtasks.model.Task
 import com.leonidov.listtasks.persistence.TaskRepository
+import com.leonidov.listtasks.service.TaskService
 import org.springframework.stereotype.Service
 import java.util.*
 
