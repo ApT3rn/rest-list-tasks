@@ -23,3 +23,8 @@
 
 ## Стек:
 Kotlin, Spring Framework (Boot, Web, Security, Data), NoSQL (MongoDB, Redis), jwt
+
+## Инструкция для запуска:
+
+Перейдите по пути /src/main/resources/, после чего откройте файл application.properties 
+и заполните свои значения.
