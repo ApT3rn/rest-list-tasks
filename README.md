@@ -13,13 +13,13 @@
 Запросы для авторизированных пользователей:
 - GET /api/v1/tasks - возвращает список всех доступных задач;
 - POST /api/v1/tasks - добавляет новую задачу, принимает в тело запроса (details);
-- GET /api/v1/tasks/{id} - возвращает задачу с переданным id в запросе;
-- POST /api/v1/tasks/{id} - изменяет задачу с переданным id в запросе, принимает в тело запроса (details);
+- GET /api/v1/tasks/{id} - возвращает задачу по id в запросе;
+- POST /api/v1/tasks/{id} - изменяет задачу по id в запросе, принимает в тело запроса (details);
 - GET /api/v1/tasks/created - возвращает список всех задач созданных пользователем;
 - GET /api/v1/tasks/progress - возвращает список всех задач взятых в работу пользователем;
 - GET /api/v1/tasks/completed - возращает список всех задач завершенных пользователем;
-- POST /api/v1/tasks/{id}/progress - позволяет пользователю взять задачу в работу с переданным id в запросе;
-- POST /api/v1/tasks/{id}/complete - завершает задачу с переданным id в запросе.
+- POST /api/v1/tasks/{id}/progress - позволяет пользователю взять задачу в работу по id в запросе;
+- POST /api/v1/tasks/{id}/complete - завершает задачу по id в запросе.
 
 ### Стек:
 Kotlin, Spring Framework (Boot, Web, Security, Data), NoSQL (MongoDB, Redis), jwt
