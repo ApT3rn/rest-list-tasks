@@ -22,7 +22,7 @@
 - POST /api/v1/tasks/{id}/complete - завершает задачу по id в запросе.
 
 ### Стек:
-Kotlin, Spring Framework (Boot, Web, Security, Data), NoSQL (MongoDB, Redis), jwt
+Kotlin, Gradle, Spring Framework (Boot, Web, Security, Data), NoSQL (MongoDB, Redis), jwt
 
 ### Инструкция для запуска:
 
